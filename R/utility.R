@@ -219,3 +219,33 @@ compute_stats <- function(var1, var2, var_name,eps=3) {
    # return(list(plots=pl,stats=stats))
    return(list(stats=stats))
 }
+#'
+#' Row-wise log-sum-exp
+#'
+#' Compute the row-wise log-sum-exp of a numeric matrix in a numerically stable
+#' way. This is used to evaluate \eqn{\log \sum_k \exp(x_{ik})} without overflow
+#' or underflow by subtracting the row maximum before exponentiation.
+#'
+#' @param mat A numeric matrix of size \eqn{n \times K}.
+#'
+#' @return A numeric vector of length \eqn{n} where the i-th entry is
+#' \eqn{\log \sum_{k=1}^K \exp(mat_{ik})}. Rows containing only \code{-Inf}
+#' return \code{-Inf}.
+#' 
+#' @srrstats {G1.4a} roxygen2 is used
+#' @keywords internal
+row_log_sum_exp <- function(mat) {
+   # Robust row-wise log-sum-exp. 
+   # It can handle rows that are possibly all -Inf.
+   m <- apply(mat, 1, max)
+   out <- rep(-Inf, length(m))
+   
+   ok <- is.finite(m)
+   if (any(ok)) {
+      mm <- m[ok]
+      x  <- mat[ok, , drop = FALSE]
+      x  <- sweep(x, 1, mm, "-")
+      out[ok] <- mm + log(rowSums(exp(x)))
+   }
+   out
+}

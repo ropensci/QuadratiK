@@ -96,7 +96,7 @@ test_that("Random Generation from PKBD works", {
 
 test_that("Random Generation from PKBD compared to wrapped Cauchy", {
    
-   require(circular)
+   suppressWarnings(require(circular))
 
    # Parameters 
    n <- 10000

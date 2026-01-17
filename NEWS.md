@@ -1,3 +1,13 @@
+QuadratiK 1.1.4 (2026-01-16) 
+=========================
+
+### BUG FIXES
+
+  * Change computation of the M-step in the `pkbc` algorithm to handle larger 
+    dimensions 
+  * Improve `pkbc` function for reducing the computational time required
+  
+
 QuadratiK 1.1.3 (2025-02-04) 
 =========================
 

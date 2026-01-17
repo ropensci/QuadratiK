@@ -151,288 +151,269 @@ setGeneric("pkbc",function(dat,
 #' 
 #' @export
 setMethod("pkbc", signature(dat = "ANY"),
-    function(dat,
-             nClust,
-             maxIter = 300,
-             stoppingRule = "loglik",
-             initMethod = "sampleData",
-             numInit = 10){
-       # Constant defining threshold by which log likelihood must change 
-       # to continue iterations, if applicable.
-       LL_TOL <- 1e-7
-       
-       # validate input
-       if(is.null(nClust)) {
-          stop("Input parameter nClust is required. Provide one specific 
+          function(dat,
+                   nClust,
+                   maxIter = 300,
+                   stoppingRule = "loglik",
+                   initMethod = "sampleData",
+                   numInit = 10){
+             # Constant defining threshold by which log likelihood must change 
+             # to continue iterations, if applicable.
+             LL_TOL <- 1e-7
+             
+             # validate input
+             if(is.null(nClust)) {
+                stop("Input parameter nClust is required. Provide one specific 
                value or a set of possible values.")
-       } else if(is.vector(nClust) & is.numeric(nClust)) {
-          if(any(nClust < 1)){
-             stop('Values in the input parameter nClust must be 
+             } else if(is.vector(nClust) & is.numeric(nClust)) {
+                if(any(nClust < 1)){
+                   stop('Values in the input parameter nClust must be 
                   greater than 0')
-          }
-       } else {
-          stop("nClust must be a single value or a numeric vector of possible
+                }
+             } else {
+                stop("nClust must be a single value or a numeric vector of possible
                   values")
-       }
-       if(is.vector(maxIter) & is.numeric(maxIter)) {
-          if (maxIter < 1) {
-             stop("Input parameter maxIter must be an integer greater than 0.")
-          }
-       } else {
-          stop("maxIter must be a single integer value.") 
-       }
-       if ( !(stoppingRule %in% c("max", "membership", "loglik")) ) {
-          stop(paste("Unrecognized value ", stoppingRule, " in input 
+             }
+             if(is.vector(maxIter) & is.numeric(maxIter)) {
+                if (maxIter < 1) {
+                   stop("Input parameter maxIter must be an integer greater than 0.")
+                }
+             } else {
+                stop("maxIter must be a single integer value.") 
+             }
+             if ( !(stoppingRule %in% c("max", "membership", "loglik")) ) {
+                stop(paste("Unrecognized value ", stoppingRule, " in input 
           parameter stoppingRule.", sep=''))
-       }
-       if (!(initMethod %in% c("sampleData"))) {
-          stop(paste("Unrecognized value ", initMethod, " in input 
+             }
+             if (!(initMethod %in% c("sampleData"))) {
+                stop(paste("Unrecognized value ", initMethod, " in input 
           parameter initMethod.", sep=''))
-       }
-       if(is.vector(numInit) & is.numeric(numInit)) {
-          if (numInit < 1) {
-             stop("Input parameter numInit must be greater than 0.")
-          }
-       } else {
-          stop("numInit must be a single integer value.")
-       }
-       
-       # set options for stopping rule
-       checkMembership <- stoppingRule == "membership"
-       checkLoglik <- stoppingRule == "loglik"
-       
-       if(is.data.frame(dat)){
-          dat <- as.matrix(dat)
-       } else if(!is.matrix(dat)){
-          stop("dat must be a matrix or a data.frame")
-       }
-       if(!is.numeric(dat)) {
-          stop("dat must be a numeric matrix or data.frame")
-       }
-       
-       if(any(is.na(dat))) {
-          stop("There are missing values in the data set!")
-       } else if(any(is.infinite(dat) |is.nan(dat))){
-          stop("There are undefined values, that is Nan, Inf, -Inf")
-       }
-       # Normalize the data
-       dat <- dat/sqrt(rowSums(dat^2))
-       
-       # Initialize variables of interest
-       numVar <- ncol(dat)
-       numData <- nrow(dat)
-       
-       res_k <- list()
-       for(numClust in nClust){
-          
-          logLikVec <- rep(-Inf, numInit)
-          numIterPerRun <- rep(-99, numInit)
-          alpha_best <- rep(-99, numClust)
-          rho_best <- rep(-99, numClust)
-          mu_best <- matrix(nrow = numClust, ncol = numVar)
-          normprobMat_best <- matrix(-99, nrow=numData, ncol=numClust)
-          if (initMethod == "sampleData") {
-             uniqueData <- unique(dat)
-             numUniqueObs <- nrow(uniqueData)
-             if (numUniqueObs < numClust) {
-                stop(paste("Only", numUniqueObs, "unique observations.",
-                           'When initMethod = "sampleData", must have more
+             }
+             if(is.vector(numInit) & is.numeric(numInit)) {
+                if (numInit < 1) {
+                   stop("Input parameter numInit must be greater than 0.")
+                }
+             } else {
+                stop("numInit must be a single integer value.")
+             }
+             
+             # set options for stopping rule
+             checkMembership <- stoppingRule == "membership"
+             checkLoglik <- stoppingRule == "loglik"
+             
+             if(is.data.frame(dat)){
+                dat <- as.matrix(dat)
+             } else if(!is.matrix(dat)){
+                stop("dat must be a matrix or a data.frame")
+             }
+             if(!is.numeric(dat)) {
+                stop("dat must be a numeric matrix or data.frame")
+             }
+             
+             if(any(is.na(dat))) {
+                stop("There are missing values in the data set!")
+             } else if(any(is.infinite(dat) |is.nan(dat))){
+                stop("There are undefined values, that is Nan, Inf, -Inf")
+             }
+             # Normalize the data
+             df_norms <- sqrt(rowSums(dat^2))
+             if (any(df_norms == 0)) stop("At least one row has zero L2 norm; 
+                               cannot normalize.")
+             dat <- dat / df_norms
+             
+             # Initialize variables of interest
+             numVar <- ncol(dat)
+             numData <- nrow(dat)
+             
+             # constants
+             log_w_d <- (numVar / 2) * (log(2) + log(pi)) - lgamma(numVar / 2)
+             p_half  <- numVar / 2
+             
+             res_k <- list()
+             for(numClust in nClust){
+                
+                logLikVec <- rep(-Inf, numInit)
+                numIterPerRun <- rep(-99, numInit)
+                alpha_best <- rep(-99, numClust)
+                rho_best <- rep(-99, numClust)
+                mu_best <- matrix(nrow = numClust, ncol = numVar)
+                normprobMat_best <- matrix(-99, nrow=numData, ncol=numClust)
+                if (initMethod == "sampleData") {
+                   uniqueData <- unique(dat)
+                   numUniqueObs <- nrow(uniqueData)
+                   if (numUniqueObs < numClust) {
+                      stop(paste("Only", numUniqueObs, "unique observations.",
+                                 'When initMethod = "sampleData", must have more
                            than nClust unique observations.'
-                ))
-             }
-          }
-          log_w_d <- (numVar / 2) * (log(2) + log(pi)) - lgamma(numVar / 2)
-          
-          # Begin initializations
-          for (init in 1:numInit) {
-             
-             # initialize parameters
-             alpha_current <- rep(1/numClust, numClust)
-             rho_current <- rep(0.5,numClust)
-             
-             # Initializing mu
-             if (initMethod == 'sampleData') {
-                # sampling w/o replacement from unique data points
-                mu_current <- matrix(t(uniqueData[sample(numUniqueObs, 
-                                 size=numClust, replace=FALSE) ,]), 
-                                 ncol=numVar, byrow=TRUE)
-             }
-             
-             currentIter <- 1
-             membCurrent <- rep.int(0, times = numData)
-             loglikCurrent <- -Inf
-             
-             # Begin EM iterations
-             while (currentIter <= maxIter) {
-                v_mat <- dat %*% t(mu_current)
-                alpha_mat_current <- matrix(
-                   alpha_current,
-                   nrow = numData,
-                   ncol = numClust,
-                   byrow = TRUE
-                )
-                rho_mat_current <- matrix(
-                   rho_current,
-                   nrow = numData,
-                   ncol = numClust,
-                   byrow = TRUE
-                )
-                log_probMat_denom <- log(1 + rho_mat_current^2 - 
-                                            2*rho_mat_current*v_mat)
-                # eq (11) in ICMLD16 paper
-                log_probMat <- log(1 - (rho_mat_current^2)) - log_w_d - 
-                                    (numVar / 2) * log_probMat_denom
-                ######### E step done#####################################
-                ########## M step now#####################################
-                # Denominator of eq (18) in ICMLD16 paper
-                probSum <- matrix(
-                   exp(log_probMat) %*% alpha_current,
-                   nrow = numData,
-                   ncol = numClust
-                )
-                # eq (18) in ICMLD16 paper
-                log_normProbMat_current <- log(alpha_mat_current) + 
-                                             log_probMat - log(probSum)
-                # denominator of eq (20) in ICMLD16 paper
-                log_weightMat <- log_normProbMat_current - log_probMat_denom
-                
-                # eq (19) in ICMLD16 paper
-                alpha_current <- colSums(exp(log_normProbMat_current)) / numData
-                # numerator of fraction in eq (21) of ICMLD16 paper
-                mu_num_sum_MAT <- t(exp(log_weightMat)) %*% dat
-                norm_vec <- function(x) sqrt(sum(x^2))
-                mu_denom <- apply(mu_num_sum_MAT, 1, norm_vec)
-                # eq (21) of ICMLD16 paper without sign function
-                mu_current <- mu_num_sum_MAT / mu_denom
-                for(h in 1:numClust){
-                   # update rho params
-                   sum_h_weightMat <- sum(exp(log_weightMat[,h]))
-                   alpha_current_h <- alpha_current[h]
-                   mu_denom_h <- mu_denom[h]
-                   root_func <- function(x) {
-                      (-2*numData*x*alpha_current_h)/(1 - x^2) + 
-                         numVar*mu_denom_h -numVar*x*sum_h_weightMat
-                   }
-                   rho_current[h] <- (uniroot(
-                      f = root_func,
-                      interval = c(0,1),
-                      f.lower = root_func(0),
-                      f.upper = root_func(1),
-                      tol = 0.001
-                   ))$root
-                } # for h
-                
-                # Terminate iterations if maxIter is reached. Redundant 
-                # with while condition, but this ensures that the stored 
-                # numIter below is accurate.
-                if (currentIter >= maxIter) {
-                   break
-                }
-                
-                # Terminate iterations if membership is unchanged, if applicable
-                if (checkMembership) {
-                   # calculate and store group membership
-                   membPrevious <- membCurrent
-                   membCurrent <-apply(exp(log_normProbMat_current),1,which.max)
-                   if (all(membPrevious == membCurrent)) {
-                      break
-                   }
-                }
-                # Terminate iterations if log-likelihood is unchanged, if 
-                # applicable.
-                if (checkLoglik) {
-                   loglikPrevious <- loglikCurrent
-                   # Calculate log likelihood for the current iteration
-                   loglikCurrent <- sum(log( exp(log_probMat)%*%alpha_current))
-                   if (abs(loglikPrevious - loglikCurrent) < LL_TOL) {
-                      break
-                   }
-                }
-                # Update counter to NEXT iteration number.
-                currentIter <- currentIter + 1
-             } # for currentIter
-             # Compare the current log likelihood to the best stored log 
-             # likelihood; if it exceeds the stored, then store it and all 
-             # associated estimates.
-             # alpha, rho, mu, normprobMat
-             loglikCurrent <- sum(log( exp(log_probMat) %*% alpha_current ))
-             if (loglikCurrent > max(logLikVec)) {
-                alpha_best <- alpha_current
-                rho_best <- rho_current
-                mu_best <- mu_current
-                normprobMat_best <- exp(log_normProbMat_current)
-             }
-             logLikVec[init] <- loglikCurrent
-             numIterPerRun[init] <- currentIter - 1
-             # Store run info
-          } # for init
-          # Calculate final membership
-          memb_best <- apply(normprobMat_best, 1, which.max)
-          
-          # Calculate the within-cluster sum of squares
-          wcss <- vapply(1:numClust, function(cl) {
-             idx <- which(memb_best==cl)
-             
-             if(length(idx)>0){
-                
-                dat_memb <- matrix(t(dat[idx,]),ncol=numVar, byrow=TRUE)
-                mu_memb <- matrix(rep(as.numeric(mu_best[cl,]), 
-                                      times = nrow(dat_memb)), 
-                                       ncol=numVar, 
-                                       byrow=TRUE)
-                return(sum(apply(dat_memb - mu_memb, 1, norm, "2")**2))
-                
-             } else {
-                return(0)
-             }
-          }, numeric(1))
-          wcss <- sum(wcss)
-          
-          # Calculate the within-cluster sum of squares using cosine 
-          # similarity
-          wcss_cos <- vapply(1:numClust, function(cl) {
-             idx <- which(memb_best==cl)
-             if(length(idx)>0){
-                dat_memb <- matrix(t(dat[idx,]),ncol=numVar, byrow=TRUE)
-                mu_memb <- matrix(rep(mu_best[cl,], nrow(dat_memb)), 
-                                  ncol=numVar,byrow=TRUE)
-                
-                return(sum(dat_memb * mu_memb))
-             } else {
-                return(0)
-             }
-          }, numeric(1))
-          
-          wcss_cos <- sum(wcss_cos)
-          
-          res_k[[numClust]] <- list(postProbs = normprobMat_best,
-                                    LogLik = max(logLikVec),
-                                    wcss = c(wcss,wcss_cos),
-                                    params = list(mu = mu_best, 
-                                                  rho = rho_best, 
-                                                  alpha = alpha_best),
-                                    finalMemb = memb_best,
-                                    runInfo = list(
-                                       logLikVec = logLikVec,
-                                       numIterPerRun = numIterPerRun
-                                    ))
-          
-       }
-       
-       
-       # Store and return results object.
-       results <- new("pkbc",
-                      res_k = res_k,
-                      input = list(
-                         dat = dat,
-                         nClust = nClust,
-                         maxIter = maxIter,
-                         stoppingRule = stoppingRule,
-                         initMethod = initMethod,
-                         numInit = numInit
                       ))
-       return(results)
-    })
+                   }
+                }
+                
+                # Begin initializations
+                for (init in 1:numInit) {
+                   
+                   # initialize parameters
+                   alpha_current <- rep(1/numClust, numClust)
+                   rho_current <- rep(0.5,numClust)
+                   
+                   # Initializing mu
+                   if (initMethod == 'sampleData') {
+                      # sampling w/o replacement from unique data points
+                      mu_current <- matrix(t(uniqueData[sample(numUniqueObs, 
+                                                               size=numClust, replace=FALSE) ,]), 
+                                           ncol=numVar, byrow=TRUE)
+                   }
+                   
+                   currentIter <- 1
+                   membCurrent <- rep.int(0, times = numData)
+                   loglikCurrent <- -Inf
+                   
+                   # Begin EM iterations
+                   while (currentIter <= maxIter) {
+                      v_mat <- dat %*% t(mu_current)
+                      # denom: 1 + rho^2 - 2*rho*v  (avoid forming rho_mat)
+                      rho2 <- rho_current * rho_current
+                      tmp  <- sweep(-2 * v_mat, 2, rho_current, "*")
+                      tmp  <- sweep(tmp, 2, rho2, "+")
+                      log_probMat_denom <- log(1 + tmp)
+                      
+                      # eq (11) in ICMLD16 paper
+                      log_one_minus_rho2 <- log(1-rho2)
+                      log_probMat <- sweep(-p_half * log_probMat_denom, 2, 
+                                           log_one_minus_rho2, "+")
+                      log_probMat <- log_probMat - log_w_d
+                      ######### E step done#####################################
+                      ########## M step now#####################################
+                      # Denominator of eq (18) in ICMLD16 paper
+                      log_prob_plus_alpha <- sweep(log_probMat, 2, 
+                                                   log(alpha_current), "+")
+                      
+                      # eq (18) in ICMLD16 paper
+                      # log denominator per observation: log sum_k alpha_k * p(x_i|k)
+                      log_denom <- row_log_sum_exp(log_prob_plus_alpha)
+                      # posterior log-probs: log τ_ik
+                      log_normProbMat_current <- sweep(log_prob_plus_alpha, 1,
+                                                       log_denom, "-")
+                      # denominator of eq (20) in ICMLD16 paper
+                      log_weightMat <- log_normProbMat_current - log_probMat_denom
+                      
+                      # eq (19) in ICMLD16 paper
+                      # M-step: mu
+                      w_mat <- exp(log_weightMat)                 # n x K
+                      mu_num_sum_MAT <- crossprod(w_mat, dat)     # K x p
+                      mu_denom <- sqrt(rowSums(mu_num_sum_MAT * mu_num_sum_MAT))
+                      mu_denom[mu_denom == 0] <- 1               # prevents NaN in mu update
+                      mu_current <- sweep(mu_num_sum_MAT, 1, mu_denom, "/")
+                      
+                      # M-step: rho (uniroot)
+                      sum_weight <- colSums(w_mat)
+                      
+                      for(h in 1:numClust){
+                         # update rho params
+                         sum_weight_h <- sum_weight[h]
+                         alpha_current_h <- alpha_current[h]
+                         mu_denom_h <- mu_denom[h]
+                         root_func <- function(x) {
+                            (-2 * numData * x * alpha_current_h) / (1 - x^2) +
+                               numVar * mu_denom_h -
+                               numVar * x * sum_weight_h
+                         }
+                         rho_current[h] <- (uniroot(
+                            f = root_func,
+                            interval = c(0,1),
+                            f.lower = root_func(0),
+                            f.upper = root_func(1),
+                            tol = 0.001
+                         ))$root
+                      } # for h
+                      
+                      # Terminate iterations if maxIter is reached. Redundant 
+                      # with while condition, but this ensures that the stored 
+                      # numIter below is accurate.
+                      if (currentIter >= maxIter) {
+                         break
+                      }
+                      
+                      # Terminate iterations if membership is unchanged, if applicable
+                      if (checkMembership) {
+                         # calculate and store group membership
+                         membPrevious <- membCurrent
+                         membCurrent <- max.col(log_normProbMat_current, 
+                                                ties.method = "first")
+                         if (all(membPrevious == membCurrent)) break
+                         
+                         if (all(membPrevious == membCurrent)) {
+                            break
+                         }
+                      }
+                      # Terminate iterations if log-likelihood is unchanged, if 
+                      # applicable.
+                      if (checkLoglik) {
+                         loglikPrevious <- loglikCurrent
+                         # Calculate log likelihood for the current iteration
+                         loglikCurrent <- sum(log_denom)
+                         if (abs(loglikPrevious - loglikCurrent) < LL_TOL) break
+                      }
+                      # Update counter to NEXT iteration number.
+                      currentIter <- currentIter + 1
+                   } # for currentIter
+                   # Compare the current log likelihood to the best stored log 
+                   # likelihood; if it exceeds the stored, then store it and all 
+                   # associated estimates.
+                   # alpha, rho, mu, normprobMat
+                   loglikCurrent <- sum(log_denom)
+                   if (loglikCurrent > max(logLikVec)) {
+                      alpha_best <- alpha_current
+                      rho_best <- rho_current
+                      mu_best <- mu_current
+                      normprobMat_best <- exp(log_normProbMat_current)
+                   }
+                   logLikVec[init] <- loglikCurrent
+                   numIterPerRun[init] <- currentIter - 1
+                   # Store run info
+                } # for init
+                # Calculate final membership
+                memb_best <- max.col(normprobMat_best, ties.method = "first")
+                
+                # Calculate the within-cluster sum of squares
+                # Calculate the within-cluster sum of squares using cosine 
+                # similarity
+                # fast WCSS using normalized identity: ||x-mu||^2 = 2 - 2 x·mu
+                mu_assigned <- mu_best[memb_best, , drop = FALSE]
+                dot <- rowSums(dat * mu_assigned)
+                dot <- pmin(1, pmax(-1, dot))  # guard tiny numeric drift
+                
+                wcss_cos <- sum(dot)
+                wcss <- sum(2 - 2 * dot)
+                
+                res_k[[numClust]] <- list(postProbs = normprobMat_best,
+                                          LogLik = max(logLikVec),
+                                          wcss = c(wcss,wcss_cos),
+                                          params = list(mu = mu_best, 
+                                                        rho = rho_best, 
+                                                        alpha = alpha_best),
+                                          finalMemb = memb_best,
+                                          runInfo = list(
+                                             logLikVec = logLikVec,
+                                             numIterPerRun = numIterPerRun
+                                          ))
+                
+             }
+             
+             
+             # Store and return results object.
+             results <- new("pkbc",
+                            res_k = res_k,
+                            input = list(
+                               dat = dat,
+                               nClust = nClust,
+                               maxIter = maxIter,
+                               stoppingRule = stoppingRule,
+                               initMethod = initMethod,
+                               numInit = numInit
+                            ))
+             return(results)
+          })
 #' @rdname pkbc
 #'
 #' @param object Object of class \code{pkbc}
@@ -1149,8 +1130,10 @@ pkbc_validation <- function(object, true_label=NULL) {
       
       # Compute the In-Group Proportion
       if(k>1){
-         igp_k[[k]] <- clusterRepro::IGP.clusterRepro(as.data.frame(t(x)), 
-                              as.data.frame(t(object@res_k[[k]]$params$mu)))$IGP
+         Data <- as.data.frame(t(x))
+         Centroids <- as.data.frame(t(object@res_k[[k]]$params$mu))
+         rownames(Centroids) <- rownames(Data)
+         igp_k[[k]] <- clusterRepro::IGP.clusterRepro(Data, Centroids)$IGP
       }
       
       # Compute the Average Silhouette Width
