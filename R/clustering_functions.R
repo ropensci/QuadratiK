@@ -289,20 +289,26 @@ setMethod("pkbc", signature(dat = "ANY"),
                                                    log(alpha_current), "+")
                       
                       # eq (18) in ICMLD16 paper
-                      # log denominator per observation: log sum_k alpha_k * p(x_i|k)
+                      # log denominator per observation: 
+                      # log sum_k alpha_k * p(x_i|k)
                       log_denom <- row_log_sum_exp(log_prob_plus_alpha)
                       # posterior log-probs: log τ_ik
                       log_normProbMat_current <- sweep(log_prob_plus_alpha, 1,
                                                        log_denom, "-")
                       # denominator of eq (20) in ICMLD16 paper
-                      log_weightMat <- log_normProbMat_current - log_probMat_denom
+                      log_weightMat <- log_normProbMat_current - 
+                                       log_probMat_denom
                       
                       # eq (19) in ICMLD16 paper
+                  alpha_current <- colSums(exp(log_normProbMat_current))/numData
+                      
                       # M-step: mu
                       w_mat <- exp(log_weightMat)                 # n x K
+                      # numerator of fraction in eq (21) of ICMLD16 paper
                       mu_num_sum_MAT <- crossprod(w_mat, dat)     # K x p
                       mu_denom <- sqrt(rowSums(mu_num_sum_MAT * mu_num_sum_MAT))
-                      mu_denom[mu_denom == 0] <- 1               # prevents NaN in mu update
+                      mu_denom[mu_denom == 0] <- 1               
+                      # eq (21) of ICMLD16 paper without sign function
                       mu_current <- sweep(mu_num_sum_MAT, 1, mu_denom, "/")
                       
                       # M-step: rho (uniroot)
@@ -334,7 +340,7 @@ setMethod("pkbc", signature(dat = "ANY"),
                          break
                       }
                       
-                      # Terminate iterations if membership is unchanged, if applicable
+                      # Terminate iterations if membership is unchanged
                       if (checkMembership) {
                          # calculate and store group membership
                          membPrevious <- membCurrent
