@@ -101,7 +101,7 @@ covariance and skewness parameter estimates from the pooled sample.
 \item Generate \eqn{\mathbf{X}_1,\ldots,\mathbf{X}_{k-1}  \sim F_0}, for
 \eqn{\delta=0};
 \item Generate \eqn{\mathbf{X}_k \sim F_\delta};
-\item Compute the \eqn{k}-sample test statistic between \eqn{\mathbf{X}_1, 
+\item Compute the \eqn{k}-sample test statistic between \eqn{\mathbf{X}_1,
 \mathbf{X}_2, \ldots, \mathbf{X}_k} with kernel parameter \eqn{h};
 \item Compute the power of the test. If it is greater than 0.5,
 select \eqn{h} as optimal value.
@@ -110,7 +110,7 @@ corresponds to maximum power.
 }
 
 The available \code{alternative} are \cr
-\emph{location} alternatives, \eqn{F_\delta = 
+\emph{location} alternatives, \eqn{F_\delta =
 SN_d(\hat{\mu} + \delta,\hat{\Sigma}, \hat{\lambda})},with
 \eqn{\delta = 0.2, 0.3, 0.4}; \cr
 \emph{scale} alternatives,

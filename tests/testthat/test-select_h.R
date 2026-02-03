@@ -22,8 +22,7 @@ test_that("Error on invalid method input", {
    set.seed(123)
    expect_error(select_h(x = matrix(rnorm(100), ncol = 2), 
                         alternative = "invalid"), 
-            "The alternative argument should be one of 'location', 'scale' or 
-           'skewness'", fixed=TRUE)
+            "The alternative argument should be one of 'location', 'scale' or 'skewness'", fixed=TRUE)
    
    # x is not numeric
    expect_error(select_h(x = "invalid", alternative="skewness"), 
@@ -59,8 +58,7 @@ test_that("Error on invalid method input", {
 
    y <- rep(c(1,2), each=25)
    expect_error(select_h(x, y, alternative="skewness", delta_dim=c(1,2,1)),
-   "delta_dim must be 1 or a numeric vector of length equal to the 
-              number of columns of pooled.", fixed=TRUE)
+   "delta_dim must be 1 or a numeric vector of length equal to the number of columns of pooled.", fixed=TRUE)
    
    x <- rnorm(50)
    y <- rnorm(50, 10)
@@ -116,5 +114,3 @@ test_that("Select h", {
    expect_equal(class(result$h_sel), "numeric")
    expect_equal(class(result$power), "data.frame")
 })
-
-
