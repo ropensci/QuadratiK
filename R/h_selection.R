@@ -188,8 +188,7 @@ select_h <- function(x,
    }
    
    if (!(alternative %in% c("location", "scale", "skewness"))) {
-      stop("The alternative argument should be one of 'location', 'scale' or
-           'skewness'")
+      stop("The alternative argument should be one of 'location', 'scale' or 'skewness'")
    }
    
    n <- nrow(x)
@@ -243,8 +242,7 @@ select_h <- function(x,
    } else {
       if (!is.numeric(delta_dim) || length(delta_dim) != d) {
          stop(
-            "delta_dim must be 1 or a numeric vector of length equal to the
-              number of columns of pooled."
+            "delta_dim must be 1 or a numeric vector of length equal to the number of columns of pooled."
          )
       }
    }
