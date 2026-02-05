@@ -227,7 +227,6 @@ setMethod("pkbc", signature(dat = "ANY"),
              
              # constants
              log_w_d <- (numVar / 2) * (log(2) + log(pi)) - lgamma(numVar / 2)
-             p_half  <- numVar / 2
              
              res_k <- list()
              for(numClust in nClust){
@@ -275,11 +274,11 @@ setMethod("pkbc", signature(dat = "ANY"),
                       rho2 <- rho_current * rho_current
                       tmp  <- sweep(-2 * v_mat, 2, rho_current, "*")
                       tmp  <- sweep(tmp, 2, rho2, "+")
-                      log_probMat_denom <- log(1 + tmp)
+                      log_probMat_denom <- log1p(tmp)
                       
                       # eq (11) in ICMLD16 paper
                       log_one_minus_rho2 <- log(1-rho2)
-                      log_probMat <- sweep(-p_half * log_probMat_denom, 2, 
+                      log_probMat <- sweep(- (numVar/2) * log_probMat_denom, 2, 
                                            log_one_minus_rho2, "+")
                       log_probMat <- log_probMat - log_w_d
                       ######### E step done#####################################
