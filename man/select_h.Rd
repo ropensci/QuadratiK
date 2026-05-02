@@ -9,14 +9,16 @@ select_h(
   y = NULL,
   alternative = NULL,
   method = "subsampling",
-  b = 0.8,
-  B = 100,
+  B = 150,
+  b = 0.9,
   delta_dim = 1,
   delta = NULL,
   h_values = NULL,
   Nrep = 50,
   n_cores = 2,
   Quantile = 0.95,
+  mu = NULL,
+  Sigma = NULL,
   power.plot = TRUE
 )
 }
@@ -37,15 +39,17 @@ test.
 }}
 
 \item{alternative}{Family of alternative chosen for selecting h, between
-"location", "scale" and "skewness".}
+"location", "scale" and "skewness".
+Note that "skewness" is not available for the normality test.}
 
 \item{method}{The method used for critical value estimation
-("subsampling", "bootstrap", or "permutation").}
+("subsampling", "bootstrap", or "permutation") (default: "subsampling").}
 
-\item{b}{The size of the subsamples used in the subsampling algorithm .}
+\item{B}{The number of iterations to use for critical value estimation
+(default: 150).}
 
-\item{B}{The number of iterations to use for critical value estimation,
-B = 150 as default.}
+\item{b}{The size of the subsamples used in the subsampling algorithm
+(default: 0.9).}
 
 \item{delta_dim}{Vector of coefficient of alternative with respect to each
 dimension}
@@ -62,6 +66,12 @@ available cores.}
 
 \item{Quantile}{The quantile to use for critical value estimation, 0.95 is
 the default value.}
+
+\item{mu}{Mean vector for the reference distribution. Mandatory for the
+normality test.}
+
+\item{Sigma}{Covariance matrix of the reference distribution. Mandatory for
+the normality test.}
 
 \item{power.plot}{Logical. If TRUE, it is displayed the plot of power for
 values in h_values and delta.}
@@ -87,22 +97,20 @@ two-sample and k-sample KBQD tests. It performs a small simulation study,
 generating samples according to the family of \code{alternative} specified,
 for the chosen values of \code{h_values} and \code{delta}.
 
-We consider target alternatives \eqn{F_\delta(\hat{\mathbf{\mu}},
-\hat{\mathbf{\Sigma}}, \hat{\mathbf{\lambda}})}, where
-\eqn{\hat{\mathbf{\mu}}, \hat{\mathbf{\Sigma}}} and
-\eqn{\hat{\mathbf{\lambda}}} indicate the location,
-covariance and skewness parameter estimates from the pooled sample.
+We consider target alternatives \eqn{F_\delta(\mu, \Sigma, \lambda)}, where
+\eqn{\mu, \Sigma} and \eqn{\lambda} indicate the location, covariance and
+skewness parameters. For the normality test, \eqn{\mu} and \eqn{\Sigma} are the
+values provided by the user in the \code{mu} and \code{Sigma} arguments, and
+\eqn{\lambda} is set to zero. For the two-sample and k-sample tests, \eqn{\mu,
+\Sigma} and \eqn{\lambda} indicate the location, covariance and skewness
+parameter estimates from the pooled sample.
 \itemize{
-\item Compute the estimates of the mean \eqn{\hat{\mu}}, covariance matrix
-\eqn{\hat{\Sigma}} and skewness \eqn{\hat{\lambda}} from the pooled sample.
-\item Choose the family of alternatives \eqn{F_\delta = F_\delta(\hat{\mu}
-,\hat{\Sigma}, \hat{\lambda})}. \cr \cr
+\item Choose the family of alternatives \eqn{F_\delta = F_\delta(\mu, \Sigma, \lambda)}. \cr \cr
 \emph{For each value of \eqn{\delta} and \eqn{h}:}
 \item Generate \eqn{\mathbf{X}_1,\ldots,\mathbf{X}_{k-1}  \sim F_0}, for
 \eqn{\delta=0};
 \item Generate \eqn{\mathbf{X}_k \sim F_\delta};
-\item Compute the \eqn{k}-sample test statistic between \eqn{\mathbf{X}_1,
-\mathbf{X}_2, \ldots, \mathbf{X}_k} with kernel parameter \eqn{h};
+\item Compute the test statistic with kernel parameter \eqn{h};
 \item Compute the power of the test. If it is greater than 0.5,
 select \eqn{h} as optimal value.
 \item If an optimal value has not been selected, choose the \eqn{h} which
@@ -111,13 +119,13 @@ corresponds to maximum power.
 
 The available \code{alternative} are \cr
 \emph{location} alternatives, \eqn{F_\delta =
-SN_d(\hat{\mu} + \delta,\hat{\Sigma}, \hat{\lambda})},with
+SN_d(\mu + \delta, \Sigma, \lambda)}, with
 \eqn{\delta = 0.2, 0.3, 0.4}; \cr
 \emph{scale} alternatives,
-\eqn{F_\delta = SN_d(\hat{\mu} ,\hat{\Sigma}*\delta, \hat{\lambda})},
-\eqn{\delta = 0.1, 0.3, 0.5}; \cr
+\eqn{F_\delta = SN_d(\mu, \Sigma*\delta, \lambda)},
+\eqn{\delta = 1.1, 1.3, 1.5}; \cr
 \emph{skewness} alternatives,
-\eqn{F_\delta = SN_d(\hat{\mu} ,\hat{\Sigma}, \hat{\lambda} + \delta)},
+\eqn{F_\delta = SN_d(\mu, \Sigma, \lambda + \delta)},
 with \eqn{\delta = 0.2, 0.3, 0.6}. \cr
 The values of \eqn{h = 0.6, 1, 1.4, 1.8, 2.2} and \eqn{N=50} are set as
 default values. \cr
@@ -137,7 +145,7 @@ this when applying the function to large or complex data.
 \donttest{
 x <- matrix(rnorm(100), ncol = 2)
 y <- matrix(rnorm(100), ncol = 2)
-h_sel <- select_h(x, y, "skewness")
+h_sel <- select_h(x, y, alternative = "skewness")
 h_sel
 }
 

@@ -32,5 +32,5 @@ summary(unif_test)
 
 }
 \seealso{
-\code{\link[=pk.test]{pk.test()}} and \linkS4class{pk.test} for additional details.
+\code{\link[=pk.test]{pk.test()}} for additional details.
 }

@@ -17,12 +17,12 @@ library(QuadratiK)
 ## -----------------------------------------------------------------------------
 x <- matrix(rnorm(100), ncol = 2)
 # Does x come from a multivariate standard normal distribution?
-kb.test(x, h = 0.4)
+kb.test(x, h = 0.4, mu = c(0,0), Sigma = diag(2))
 
 ## -----------------------------------------------------------------------------
 x <- matrix(rnorm(100,4), ncol = 2)
 # Does x come from the specified multivariate normal distribution?
-kb.test(x, mu_hat = c(4,4), Sigma_hat = diag(2), h = 0.4)
+kb.test(x, mu = c(4,4), Sigma = diag(2), h = 0.4)
 
 ## -----------------------------------------------------------------------------
 x <- matrix(rnorm(100), ncol = 2)

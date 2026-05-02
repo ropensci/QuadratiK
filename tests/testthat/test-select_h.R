@@ -16,24 +16,32 @@ library(testthat)
 test_that("Error on invalid method input", {
    
    expect_error(select_h(x = matrix(rnorm(100), ncol = 2), 
-                         alternative = "location", n_cores = "invalid"), 
+                         alternative = "location", n_cores = "invalid",
+                         mu = c(0,0), Sigma = diag(2)), 
                 "n_cores must be a numeric value", fixed=TRUE)
    
    set.seed(123)
    expect_error(select_h(x = matrix(rnorm(100), ncol = 2), 
                         alternative = "invalid"), 
             "The alternative argument should be one of 'location', 'scale' or 'skewness'", fixed=TRUE)
+
+   # mu and Sigma mandatory for normality
+   expect_error(select_h(x = matrix(rnorm(20), ncol = 2), alternative = "location"),
+                "mu and Sigma must be provided for the normality test.", fixed=TRUE)
    
+   expect_error(select_h(x = matrix(rnorm(20), ncol = 2), alternative = "skewness", mu = c(0,0), Sigma = diag(2)),
+                "Skewness alternative is not available for the normality test. Please choose 'location' or 'scale'.", fixed=TRUE)
+
    # x is not numeric
    expect_error(select_h(x = "invalid", alternative="skewness"), 
                 "x must be numeric", fixed=TRUE)
    
    x <- matrix(rnorm(100), ncol = 2)
    x[1,] <- NA
-   expect_error(select_h(x = x, alternative="skewness"), 
+   expect_error(select_h(x = x, alternative="skewness", mu = c(0,0), Sigma = diag(2)), 
                 "There are missing values in x!", fixed=TRUE)
    x[1,] <- Inf
-   expect_error(select_h(x = x, alternative="skewness"), 
+   expect_error(select_h(x = x, alternative="skewness", mu = c(0,0), Sigma = diag(2)), 
          "There are undefined values in x, that is Nan, Inf, -Inf", fixed=TRUE)
    
    x <- matrix(rnorm(100), ncol = 2)
@@ -77,12 +85,12 @@ test_that("Select h", {
    set.seed(123)
    # normality
    result <- select_h(x = as.data.frame(matrix(rnorm(20),ncol=2)), 
-                      alternative="location")
+                      alternative="location", mu = c(0,0), Sigma = diag(2))
    expect_equal(class(result$h_sel), "numeric")
    expect_equal(class(result$power), "data.frame")
    
    result <- select_h(x = as.data.frame(matrix(rnorm(20),ncol=2)), 
-                      alternative="scale", n_cores = 2)
+                      alternative="scale", n_cores = 2, mu = c(0,0), Sigma = diag(2))
    expect_equal(class(result$h_sel), "numeric")
    expect_equal(class(result$power), "data.frame")
 

@@ -44,6 +44,5 @@ stats_clusters(pkbc_res, 3)
 
 }
 \seealso{
-\code{\link[=pkbc]{pkbc()}} for the clustering algorithm \cr
-\linkS4class{pkbc} for the class object definition.
+\code{\link[=pkbc]{pkbc()}} for the clustering algorithm.
 }

@@ -14,11 +14,11 @@ kb.test(
   B = 150,
   b = NULL,
   Quantile = 0.95,
-  mu_hat = NULL,
-  Sigma_hat = NULL,
+  mu = NULL,
+  Sigma = NULL,
   centeringType = "Nonparam",
   K_threshold = 10,
-  alternative = "skewness"
+  alternative = NULL
 )
 
 \S4method{kb.test}{ANY}(
@@ -29,11 +29,11 @@ kb.test(
   B = 150,
   b = 0.9,
   Quantile = 0.95,
-  mu_hat = NULL,
-  Sigma_hat = NULL,
+  mu = NULL,
+  Sigma = NULL,
   centeringType = "Nonparam",
   K_threshold = 10,
-  alternative = "skewness"
+  alternative = NULL
 )
 
 \S4method{show}{kb.test}(object)
@@ -70,9 +70,11 @@ details.}
 \item{Quantile}{The quantile to use for critical value estimation, 0.95 is
 the default value.}
 
-\item{mu_hat}{Mean vector for the reference distribution.}
+\item{mu}{Mean vector for the reference distribution. Mandatory for the
+normality test and parametric two-sample test.}
 
-\item{Sigma_hat}{Covariance matrix of the reference distribution.}
+\item{Sigma}{Covariance matrix of the reference distribution. Mandatory for
+the normality test and parametric two-sample test.}
 
 \item{centeringType}{String indicating the method used for centering the
 normal kernel ('Param' or 'Nonparam').}
@@ -93,21 +95,31 @@ contains the following slots:
 \itemize{
 \item \code{method}: Description of the kernel-based quadratic
 distance test performed.
-\item \code{x} Data list of samples X (and Y).
-\item \code{Un} The value of the U-statistic.
+\item \code{data} Data list of samples X (and Y).
+\item \code{Un} The value of the U-statistic (for Normality test).
+\item \code{Vn} The value of the V-statistic (for Normality test).
+\item \code{Dn} The value of the Dn statistic (for two- and k-sample tests).
+\item \code{Trace} The value of the Trace statistic (for two- and
+k-sample tests).
 \item \code{H0_Un} A logical value indicating whether or not the null
 hypothesis is rejected according to Un.
-\item \code{CV_Un} The critical value computed for the test Un.
-\item \code{Vn} The value of the V-statistic (if available).
 \item \code{H0_Vn} A logical value indicating whether or not the null
-hypothesis is rejected according to Vn (if available).
-\item \code{CV_Vn} The critical value computed for the test Vn
-(if available).
+hypothesis is rejected according to Vn.
+\item \code{H0_Dn} A logical value indicating whether or not the null
+hypothesis is rejected according to Dn.
+\item \code{H0_Trace} A logical value indicating whether or not the null
+hypothesis is rejected according to Trace.
+\item \code{CV_Un} The critical value computed for the test Un.
+\item \code{CV_Vn} The critical value computed for the test Vn.
+\item \code{CV_Dn} The critical value computed for the test Dn.
+\item \code{CV_Trace} The critical value computed for the test Trace.
 \item \code{h} List with the value of bandwidth parameter used for the
 normal kernel function. If \code{select_h} is used, the matrix of computed
 power values and the corresponding power plot are also provided.
 \item \code{B} Number of bootstrap/permutation/subsampling replications.
 \item \code{var_Un} exact variance of the kernel-based U-statistic.
+\item \code{var_Dn} exact variance of the kernel-based Dn-statistic.
+\item \code{var_Trace} exact variance of the kernel-based Trace-statistic.
 \item \code{cv_method} The method used to estimate the critical value
 (one of "subsampling", "permutation" or "bootstrap").
 
@@ -139,8 +151,8 @@ for every \eqn{\mathbf{s}, \mathbf{t} \in \mathbb{R}^d \times
 tuning parameter \eqn{h}. \cr
 \itemize{
 \item \strong{Test for Normality}: \cr
-Let \eqn{x_1, x_2, ..., x_n} be a random sample with empirical
-distribution function \eqn{\hat F}. We test the null hypothesis of
+Let \eqn{x_1, x_2, ..., x_n} be a random sample with
+distribution function \eqn{F}. We test the null hypothesis of
 normality, i.e. \eqn{H_0:F=G=\mathcal{N}_d(\mu, \Sigma)}.
 
 We consider the U-statistic estimate of the sample KBQD
@@ -219,14 +231,14 @@ test statistics when \eqn{k=2}.
 }
 \subsection{Kernel centering}{
 
-The arguments \code{mu_hat} and \code{Sigma_hat} indicate the normal model
-considered for the normality test, that is \eqn{H_0: F = N(}\code{mu_hat},
-\code{Sigma_hat}).
-For the two-sample and \eqn{k}-sample tests, \code{mu_hat} and
-\code{Sigma_hat} can
+The arguments \code{mu} and \code{Sigma} indicate the normal model
+considered for the normality test, that is \eqn{H_0: F = N(}\code{mu},
+\code{Sigma}).
+For the two-sample test, \code{mu} and
+\code{Sigma} can
 be used for the parametric centering of the kernel, in the case we want to
 specify the reference distribution, with \code{centeringType = "Param"}.
-This is the default method when the test for normality is performed.
+This is the method used when the test for normality is performed.
 The normal kernel centered with respect to
 \eqn{G \sim N_d(\mathbf{\mu}, \mathbf{V})} can be computed as
 \deqn{K_{cen(G)}(\mathbf{s}, \mathbf{t}) = 
@@ -248,9 +260,10 @@ Let \eqn{\mathbf{z}_1,\ldots, \mathbf{z}_n} denote the pooled sample. For any
 }
 }
 \note{
-For the two- and \eqn{k}-sample tests, the slots \code{Vn}, \code{H0_Vn} and
-\code{CV_Vn} are empty, while the computed statistics are both reported in
-slots \code{Un}, \code{H0_Un} and \code{CV_Un}.
+For the two- and \eqn{k}-sample tests, the slots \code{Un}, \code{Vn},
+\code{CV_Un} and \code{CV_Vn} are empty, while the computed statistics are
+reported in slots \code{Dn}, \code{Trace}, \code{CV_Dn} and \code{CV_Trace}.
+The logical results of the tests are reported in \code{H0_Dn} and \code{H0_Trace}.
 
 A U-statistic is a type of statistic that is used to estimate a population
 parameter. It is based on the idea of averaging over all possible \emph{distinct}
@@ -265,7 +278,7 @@ x <- matrix(rnorm(100), ncol = 2)
 y <- matrix(rnorm(100), ncol = 2)
 
 # Normality test
-my_test <- kb.test(x, h=0.5)
+my_test <- kb.test(x, h=0.5, mu = c(0,0), Sigma = diag(2))
 my_test
 
 # Two-sample test
@@ -291,7 +304,4 @@ Lindsay, B.G., Markatou, M. and Ray, S. (2014) "Kernels, Degrees of Freedom,
 and Power Properties of Quadratic Distance Goodness-of-Fit Tests", Journal
 of the American Statistical Association, 109:505, 395-410,
 DOI: 10.1080/01621459.2013.836972
-}
-\seealso{
-\linkS4class{kb.test} for the class definition.
 }

@@ -92,20 +92,20 @@ The proposed tests perform well in terms of level and power for contiguous alter
 
 **Test for normality**
 
-To test the null hypothesis of normality $H_0:F=\mathcal{N}_d(\mu, \Sigma)$
+To test the null hypothesis of normality $H_0:F=\mathcal{N}_d(\mu, \Sigma)$, we specify the mean vector `mu` and the covariance matrix `Sigma`.
 
 ```{r}
 x <- matrix(rnorm(100), ncol = 2)
 # Does x come from a multivariate standard normal distribution?
-kb.test(x, h = 0.4)
+kb.test(x, h = 0.4, mu = c(0,0), Sigma = diag(2))
 ```
 
-If needed, we can specify $\mu$ and $\Sigma$, otherwise the standard normal distribution is considered.
+The arguments `mu` and `Sigma` are mandatory for the normality test.
 
 ```{r}
 x <- matrix(rnorm(100,4), ncol = 2)
 # Does x come from the specified multivariate normal distribution?
-kb.test(x, mu_hat = c(4,4), Sigma_hat = diag(2), h = 0.4)
+kb.test(x, mu = c(4,4), Sigma = diag(2), h = 0.4)
 ```
 
 **Two-sample test**

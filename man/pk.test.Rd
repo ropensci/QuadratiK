@@ -32,19 +32,19 @@ Poisson kernel-based tests. The object contains the following slots:
 \itemize{
 \item \code{method}: Description of the test performed.
 \item \code{x} Data matrix.
-\item \code{Un} The value of the U-statistic.
-\item \code{CV_Un} The empirical critical value for Un.
-\item \code{H0_Vn} A logical value indicating whether or not the null
-hypothesis is rejected according to Un.
-\item \code{Vn} The value of the V-statistic Vn.
-\item \code{CV_Vn} The critical value for Vn computed following the
+\item \code{Tn} The value of the standardized U-statistic.
+\item \code{CV_Tn} The empirical critical value for Tn.
+\item \code{H0_Tn} A logical value indicating whether or not the null
+hypothesis is rejected according to Tn.
+\item \code{Sn} The value of the V-statistic Sn.
+\item \code{CV_Sn} The critical value for Sn computed following the
 asymptotic distribution.
-\item \code{H0_Vn} A logical value indicating whether or not the null
-hypothesis is rejected according to Vn.
+\item \code{H0_Sn} A logical value indicating whether or not the null
+hypothesis is rejected according to Sn.
 \item \code{rho} The value of concentration parameter used for the Poisson
 kernel function.
 \item \code{B} Number of replications for the critical value of the
-U-statistic Un.
+standardized U-statistic Tn.
 }
 }
 \description{
@@ -119,7 +119,4 @@ unif_test
 Ding, Y., Markatou, M. and Saraceno, G. (2023). “Poisson Kernel-Based Tests
 for Uniformity on the d-Dimensional Sphere.” Statistica Sinica.
 doi:10.5705/ss.202022.0347
-}
-\seealso{
-\linkS4class{pk.test}
 }

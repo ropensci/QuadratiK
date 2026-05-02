@@ -26,6 +26,5 @@ summary(res)
 
 }
 \seealso{
-\code{\link[=pkbc]{pkbc()}} for the clustering algorithm \cr
-\linkS4class{pkbc} for the class object definition.
+\code{\link[=pkbc]{pkbc()}} for the clustering algorithm.
 }

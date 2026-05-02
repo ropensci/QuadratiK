@@ -83,9 +83,9 @@ test_that("Functionality with valid inputs", {
    unif_test <- pk.test(x_sp,rho=0.8)
    
    expect_s4_class(unif_test, "pk.test")
-   expect_true(is.numeric(unif_test@Un))
-   expect_true(is.numeric(unif_test@Vn))
-   expect_false(unif_test@H0_Un)
+   expect_true(is.numeric(unif_test@Tn))
+   expect_true(is.numeric(unif_test@Sn))
+   expect_false(unif_test@H0_Tn)
    
    # Test reject uniformity
    set.seed(123)
@@ -93,13 +93,13 @@ test_that("Functionality with valid inputs", {
    unif_test <- pk.test(x_sp,rho=0.9)
    
    expect_s4_class(unif_test, "pk.test")
-   expect_true(unif_test@H0_Un)
+   expect_true(unif_test@H0_Tn)
    
    # test show method
    output <- capture.output(show(unif_test))
    expect_true(any(grepl("H0 is rejected: ", output)))
-   expect_true(any(grepl("Statistic Un: ", output)))
-   expect_true(any(grepl("Statistic Vn: ", output)))
+   expect_true(any(grepl("Statistic Tn: ", output)))
+   expect_true(any(grepl("Statistic Sn: ", output)))
    
    # test summary method
    s <- summary(unif_test)

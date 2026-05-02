@@ -60,8 +60,7 @@
 #' clustering algorithm.
 #' 
 #' @seealso [dpkb()] and [rpkb()] for more information on the Poisson 
-#'          kernel-based distribution. \cr
-#'          \linkS4class{pkbc} for the class definition.
+#'          kernel-based distribution.
 #'          
 #' @note
 #' The clustering algorithm is tailored for data points on the sphere
@@ -463,8 +462,7 @@ setMethod("show", "pkbc", function(object) {
 #' res <- pkbc(dat, 2:4)
 #' summary(res)
 #' 
-#' @seealso [pkbc()] for the clustering algorithm \cr
-#'          \linkS4class{pkbc} for the class object definition. 
+#' @seealso [pkbc()] for the clustering algorithm.
 #'
 #' @srrstats {G1.4} roxigen2 is used
 #' @srrstats {UL4.4} summary method for pkbc object
@@ -516,8 +514,7 @@ setMethod("summary", "pkbc", function(object) {
 #' @param object Object 
 #' @param ... possible additional inputs
 #' 
-#' @seealso [pkbc()] for the clustering algorithm \cr
-#'          \linkS4class{pkbc} for the class object definition.
+#' @seealso [pkbc()] for the clustering algorithm.
 #'          
 #' @export
 setGeneric("stats_clusters",function(object,...) {
@@ -631,8 +628,7 @@ setMethod("stats_clusters", "pkbc", function(object, k) {
 #' in which the plotted line has the greatest change in slope, showing 
 #' an elbow.  
 #' 
-#' @seealso [pkbc()] for the clustering algorithm \cr
-#'          \linkS4class{pkbc} for the class object definition.
+#' @seealso [pkbc()] for the clustering algorithm.
 #' 
 #' @examples
 #' dat <- matrix(rnorm(300), ncol = 3)
@@ -893,8 +889,7 @@ elbowMethod <- function(object) {
 #' newdat <- rbind(matrix(rnorm(10), ncol = 2), matrix(rnorm(10, 5), ncol = 2))
 #' predict(res, k = 2, newdat)
 #'  
-#' @seealso [pkbc()] for the clustering algorithm \cr
-#'          \linkS4class{pkbc} for the class object definition.
+#' @seealso [pkbc()] for the clustering algorithm.
 #' 
 #' @srrstats {G1.a} roxygen2 is used
 #' @srrstats {UL3.3} prediction function for pkbc object
@@ -1034,8 +1029,7 @@ setMethod("predict", signature(object="pkbc"),
 #'                     clusters specified.
 #' }
 #' 
-#' @seealso [pkbc()] for the clustering algorithm \cr
-#'          \linkS4class{pkbc} for the class object definition.
+#' @seealso [pkbc()] for the clustering algorithm.
 #'
 #' @references
 #' Kapp, A.V. and Tibshirani, R. (2007) "Are clusters found in one dataset 

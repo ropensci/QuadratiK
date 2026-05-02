@@ -52,8 +52,6 @@
 #' - Compute the 95th quantile of the empirical distribution of the test
 #'   statistic.
 #' 
-#' @seealso \linkS4class{pk.test}
-#' 
 #' @note
 #' A U-statistic is a type of statistic that is used to estimate a population
 #' parameter. It is based on the idea of averaging over all possible *distinct*
@@ -75,19 +73,19 @@
 #'\itemize{
 #'   \item \code{method}: Description of the test performed.
 #'   \item \code{x} Data matrix.
-#'   \item \code{Un} The value of the U-statistic.
-#'   \item \code{CV_Un} The empirical critical value for Un.
-#'   \item \code{H0_Vn} A logical value indicating whether or not the null 
-#'                      hypothesis is rejected according to Un.
-#'   \item \code{Vn} The value of the V-statistic Vn.
-#'   \item \code{CV_Vn} The critical value for Vn computed following the 
+#'   \item \code{Tn} The value of the standardized U-statistic.
+#'   \item \code{CV_Tn} The empirical critical value for Tn.
+#'   \item \code{H0_Tn} A logical value indicating whether or not the null 
+#'                      hypothesis is rejected according to Tn.
+#'   \item \code{Sn} The value of the V-statistic Sn.
+#'   \item \code{CV_Sn} The critical value for Sn computed following the 
 #'                      asymptotic distribution.
-#'   \item \code{H0_Vn} A logical value indicating whether or not the null 
-#'                      hypothesis is rejected according to Vn.
+#'   \item \code{H0_Sn} A logical value indicating whether or not the null 
+#'                      hypothesis is rejected according to Sn.
 #'   \item \code{rho} The value of concentration parameter used for the Poisson
 #'                    kernel function.
 #'   \item \code{B} Number of replications for the critical value of the 
-#'                  U-statistic Un.    
+#'                  standardized U-statistic Tn.    
 #'}
 #'
 #'
@@ -160,17 +158,17 @@ setMethod("pk.test", signature(x = "ANY"),
              
              dof <- DOF(d, rho)
              qu_q <- qchisq(Quantile,df=dof$DOF)
-             CV_Vn <- dof$Coefficient*qu_q
+             CV_Sn <- dof$Coefficient*qu_q
              
-             var_Un <- (2/(n*(n-1)))*((1+rho^2)/((1-rho^2)^(d-1)) -1)
+             var_Tn <- (2/(n*(n-1)))*((1+rho^2)/((1-rho^2)^(d-1)) -1)
              
-             CV_Un <- poisson_CV(d=d, size=n, rho=rho, B=B, Quantile=Quantile )
-             CV_Un <- CV_Un/sqrt(var_Un)
+             CV_Tn <- poisson_CV(d=d, size=n, rho=rho, B=B, Quantile=Quantile )
+             CV_Tn <- CV_Tn/sqrt(var_Tn)
              
-             res <- new("pk.test", Un = pk[1]/sqrt(var_Un), CV_Un = CV_Un, 
-                        Vn = pk[2], CV_Vn = CV_Vn, method = METHOD, x = x, B= B,
-                        rho= rho, H0_Un = pk[1]/sqrt(var_Un) > CV_Un, 
-                        H0_Vn = pk[2] > CV_Vn, var_Un=var_Un)
+             res <- new("pk.test", Tn = pk[1]/sqrt(var_Tn), CV_Tn = CV_Tn, 
+                        Sn = pk[2], CV_Sn = CV_Sn, method = METHOD, x = x, B= B,
+                        rho= rho, H0_Tn = pk[1]/sqrt(var_Tn) > CV_Tn, 
+                        H0_Sn = pk[2] > CV_Sn, var_Tn=var_Tn)
              return(res)
           })
 #' @rdname pk.test
@@ -183,21 +181,21 @@ setMethod("pk.test", signature(x = "ANY"),
 setMethod("show", "pk.test",
           function(object) {
              cat( "\n", object@method, "\n")
-             cat("Selected consentration parameter rho: ", object@rho, "\n")
+             cat("Selected concentration parameter rho: ", object@rho, "\n")
              
              cat("\n")
-             cat("U-statistic:\n")
+             cat("Tn-statistic:\n")
              cat("\n")
-             cat("H0 is rejected: ", object@H0_Un , "\n")
-             cat("Statistic Un: ", object@Un, "\n")
-             cat("Critical value: ", object@CV_Un,"\n")
+             cat("H0 is rejected: ", object@H0_Tn , "\n")
+             cat("Statistic Tn: ", object@Tn, "\n")
+             cat("Critical value: ", object@CV_Tn,"\n")
              
              cat("\n")
-             cat("V-statistic:\n")
+             cat("Sn-statistic:\n")
              cat("\n")
-             cat("H0 is rejected: ", object@H0_Vn, "\n")
-             cat("Statistic Vn: ", object@Vn, "\n")
-             cat("Critical value: ", object@CV_Vn,"\n")
+             cat("H0 is rejected: ", object@H0_Sn, "\n")
+             cat("Statistic Sn: ", object@Sn, "\n")
+             cat("Critical value: ", object@CV_Sn,"\n")
              
              cat("\n")
           })
@@ -217,7 +215,7 @@ setMethod("show", "pk.test",
 #'                         uniform distribution.
 #' }
 #' 
-#' @seealso [pk.test()] and \linkS4class{pk.test} for additional details.
+#' @seealso [pk.test()] for additional details.
 #'
 #' @importFrom ggpubr ggarrange
 #' @importFrom ggplot2 ggplot geom_line theme_minimal geom_abline ggtitle 
@@ -291,9 +289,10 @@ setMethod("summary", "pk.test", function(object) {
    # Print main results of the test
    cat( "\n", object@method, "\n")
    test_results <- data.frame(
-      Test_Statistics = c(object@Un, object@Vn),
-      Critical_Value = c(object@CV_Un,object@CV_Vn),
-      Reject_H0 = c(object@H0_Un, object@H0_Vn)
+      Statistic = c("Tn", "Sn"),
+      Value = c(object@Tn, object@Sn),
+      Critical_Value = c(object@CV_Tn, object@CV_Sn),
+      Reject_H0 = c(object@H0_Tn, object@H0_Sn)
    )
    print(test_results)
    print(figure)

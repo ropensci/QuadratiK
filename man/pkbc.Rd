@@ -155,6 +155,5 @@ DOI: 10.1080/10618600.2020.1740713.
 }
 \seealso{
 \code{\link[=dpkb]{dpkb()}} and \code{\link[=rpkb]{rpkb()}} for more information on the Poisson
-kernel-based distribution. \cr
-\linkS4class{pkbc} for the class definition.
+kernel-based distribution.
 }
