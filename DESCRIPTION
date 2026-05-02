@@ -1,7 +1,7 @@
 Type: Package
 Package: QuadratiK
 Title: Collection of Methods Constructed using Kernel-Based Quadratic Distances
-Version: 1.1.4
+Version: 1.2.0
 Authors@R: c(
     person("Giovanni", "Saraceno", ,"giovanni.saraceno@unipd.it", role = c("aut", "cre"),
            comment = "ORCID 000-0002-1753-2367"),

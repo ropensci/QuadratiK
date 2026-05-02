@@ -84,7 +84,10 @@ control parameter. Change in case of more than 10 samples.}
 
 \item{alternative}{Family of alternative chosen for selecting h, between
 "location", "scale" and "skewness" (only if \code{h}
-is not provided).}
+is not provided). Default is "location" for the normality
+test and "skewness" for the two-sample and k-sample tests.
+Note that "skewness" is not available for the normality
+test.}
 
 \item{object}{Object of class \code{kb.test}}
 }

@@ -1,3 +1,25 @@
+QuadratiK 1.2.0 (2026-05-02) 
+=========================
+
+### MINOR IMPROVEMENTS
+
+  * The function `select_h` can be now used also for the normality test. The 
+    parameters `mu` and `sigma` are mandatory.
+  * The `skewness` alternative is no longer supported for normality tests in
+    `select_h` and `kb.test` functions.
+
+### DOCUMENTATION FIXES
+
+  * The arguments of the class object `pk.test` have been renamed to match the
+    terminology in the article by Ding, Markatou, Saraceno (2025) 
+    Statistica Sinica. `Un` and `Vn` statistics are now renamed to `Tn` and `Sn`
+    respectively.
+  * In the functions `select_h` and `kb.test`, the arguments `mu_hat` and 
+    `sigma_hat` have been renamed to `mu` and `sigma` for consistency.
+  * Examples in the documentation have been changed accordingly.
+  * Code testing has been updated accordingly. 
+
+
 QuadratiK 1.1.4 (2026-01-16) 
 =========================
 

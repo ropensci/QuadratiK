@@ -39,8 +39,10 @@ test.
 }}
 
 \item{alternative}{Family of alternative chosen for selecting h, between
-"location", "scale" and "skewness".
-Note that "skewness" is not available for the normality test.}
+"location", "scale" and "skewness". Default is "location"
+for the normality test and "skewness" for the two-sample
+and k-sample tests. Note that "skewness" is not available
+for the normality test.}
 
 \item{method}{The method used for critical value estimation
 ("subsampling", "bootstrap", or "permutation") (default: "subsampling").}

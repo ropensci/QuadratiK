@@ -33,7 +33,7 @@ $$
 
 and the V-statistic estimate of the KBQD  
 $$
-V_{n} = \frac{1}{n}\sum_{i=1}^{n}\sum_{j=1}^{n}K_{cen}(\mathbf{x}_{i}, \mathbf{x}_{j}),
+S_{n} = \frac{1}{n}\sum_{i=1}^{n}\sum_{j=1}^{n}K_{cen}(\mathbf{x}_{i}, \mathbf{x}_{j}),
 $$
 where $K_{cen}$ denotes the Poisson kernel $K_\rho$ centered with respect to the uniform distribution on the $d$-dimensional sphere, that is
 $$
