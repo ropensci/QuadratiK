@@ -195,6 +195,7 @@ test_that("Functionality with valid inputs", {
 
 # Test 8: Testing selection of h
 test_that("Selection of h from kb.test", {
+   skip_on_cran()
    
    set.seed(123)
    x <- matrix(rnorm(100), ncol = 2)

@@ -14,6 +14,7 @@ library(testthat)
 
 # Test 1: Verify Error on Invalid Input
 test_that("Error on invalid method input", {
+   skip_on_cran()
    
    expect_error(select_h(x = matrix(rnorm(100), ncol = 2), 
                          alternative = "location", n_cores = "invalid",
@@ -82,6 +83,8 @@ test_that("Error on invalid method input", {
 
 ## # Test 1: test for select_h
 test_that("Select h", {
+   skip_on_cran()
+   
    set.seed(123)
    # normality
    result <- select_h(x = as.data.frame(matrix(rnorm(20),ncol=2)), 
